@@ -8,7 +8,7 @@
     @if (ViewBag.Mensaje != null)
     {
         <div class="alert @(ViewBag.EsValido == true ? "alert-success" : "alert-danger")">
-            @ViewBag.Mensaje
+            @Html.Raw(ViewBag.Mensaje)
         </div>
     }
     
