@@ -23,7 +23,7 @@ namespace TesteandoMVC.Tests
             // Arrange
             var mockService = new Mock<ISimpleService>();
             mockService.Setup(x => x.HoraEsPar()).Returns(true);
-            
+
             // EJEMPLO: Si el método recibiera parámetros, el mock se haría así:
             // mockService.Setup(x => x.ValidarUsuario("pepitro", "juansito")).Returns(true);
             // mockService.Setup(x => x.ValidarUsuario(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -86,7 +86,7 @@ namespace TesteandoMVC.Tests
             // Arrange
             var mockService = new Mock<ISimpleService>();
             mockService.Setup(x => x.NumeroAleatorio()).Returns(num);
-            
+
             var client = _factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
@@ -110,7 +110,7 @@ namespace TesteandoMVC.Tests
             // Arrange
             var mockService = new Mock<ISimpleService>();
             mockService.Setup(x => x.ValidarUsuario(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
-            
+
             // EJEMPLO: Si el método recibiera parámetros, el mock se haría así:
             // mockService.Setup(x => x.ValidarUsuario("pepitro", "juansito")).Returns(true);
             // mockService.Setup(x => x.ValidarUsuario(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
@@ -138,6 +138,111 @@ namespace TesteandoMVC.Tests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Contains("¡Bienvenido! Has iniciado sesión correctamente.", content);
+        }
+
+        [Theory]
+        [InlineData("Es fin de semana", true)]
+        [InlineData("No es fin de semana", false)]
+        public async Task CuandoEsFinDeSemana_muestraMensajeCorrecto(string mensajeEsperado, bool esFinDeSemana)
+        {
+            // Arrange
+            var mockService = new Mock<ISimpleService>();
+            mockService.Setup(x => x.EsFinDeSemana()).Returns(esFinDeSemana);
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddScoped<ISimpleService>(_ => mockService.Object);
+                });
+            }).CreateClient();
+
+            // Act
+            var response = await client.GetAsync("/Home/FinDeSemana");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains(mensajeEsperado, content);
+        }
+
+        [Fact]
+        public async Task ObtenerSaludo_SeMuestraElSaludo_ConElNombreCorrecto()
+        {
+            // Arrange
+            var mockService = new Mock<ISimpleService>();
+            mockService.Setup(x => x.ObtenerSaludo(It.IsAny<string>())).Returns($"Hola, Carlos!");
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddScoped<ISimpleService>(_ => mockService.Object);
+                });
+            }).CreateClient();
+
+            // Act
+            string json = "{\"nombre\":\"Carlos\"}";
+            StringContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync("/Home/ObtenerSaludo", httpContent);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Hola, Carlos!", content);
+        }
+
+        [Theory]
+        [InlineData(true, "Bienvenido, usuario premium")]
+        [InlineData(false, "Acceso Denegado")]
+        public async Task EsUsuarioPremium_DevuelveMensajeCorrecto_DependiendoElUsuario(bool esPremium, string mensaje)
+        {
+            // Arrange
+            var mockService = new Mock<ISimpleService>();
+            mockService.Setup(x => x.EsUsuarioPremium(It.IsAny<string>())).Returns(esPremium);
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddScoped<ISimpleService>(_ => mockService.Object);
+                });
+            }).CreateClient();
+
+            // Act
+            string json = "{\"email\":\"a@gmail.com\"}";
+            StringContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync("/Home/ValidarPremium", httpContent);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains(mensaje, content);
+        }
+
+        [Theory]
+        [InlineData(21, "Eres mayor de edad")]
+        [InlineData(16, "Eres menor de edad")]
+        [InlineData(18, "Eres mayor de edad")]
+        public async Task CalcularEdad_DevuelveMensajeCorrecto_DependiendoLaEdad(int edad, string mensaje)
+        {
+            // Arrange
+            var mockService = new Mock<ISimpleService>();
+            mockService.Setup(x => x.CalcularEdad(It.IsAny<DateTime>())).Returns(edad);
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddScoped<ISimpleService>(_ => mockService.Object);
+                });
+            }).CreateClient();
+
+            // Act
+            string json = "{\"fechaNacimiento\":\"2000-01-01\"}";
+            StringContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync("/Home/CalcularEdad", httpContent);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains(mensaje, content);
         }
     }
 }

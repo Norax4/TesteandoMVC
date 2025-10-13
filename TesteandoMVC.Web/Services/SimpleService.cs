@@ -5,11 +5,36 @@ namespace TesteandoMVC.Web.Services
         bool HoraEsPar();
         int NumeroAleatorio();
         bool ValidarUsuario(string usuario, string password);
+
+        string ObtenerSaludo(string nombre);
+        bool EsFinDeSemana();
+        int CalcularEdad(DateTime fechaNacimiento);
+        bool EsUsuarioPremium(string email);
     }
 
     public class SimpleService : ISimpleService
     {
         private readonly Random _random = new Random();
+
+        public bool EsUsuarioPremium(string email) 
+        {
+            return true; // Simplificado para el ejemplo
+        }
+
+        public int CalcularEdad(DateTime fechaNacimiento) 
+        {
+            return 18;
+        }
+
+        public bool EsFinDeSemana() 
+        {
+            return true; // Simplificado para el ejemplo
+        }
+
+        public string ObtenerSaludo(string nombre)
+        {
+            return $"Hola, {nombre}!";
+        }
 
         public bool HoraEsPar()
         {

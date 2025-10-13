@@ -20,6 +20,49 @@ public class HomeController : Controller
         _simpleService = simpleService;
         _testDoublesService = testDoublesService;
     }
+    public IActionResult Premium() 
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult ValidarPremium(string email)
+    {
+        ViewBag.EsPremium = _simpleService.EsUsuarioPremium(email);
+        return View("Premium");
+    }
+
+    public IActionResult Saludo() 
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult ObtenerSaludo(string nombre) 
+    {
+        ViewBag.Saludo = _simpleService.ObtenerSaludo(nombre);
+        return View("Saludo");
+    }
+
+    [HttpGet]
+    public IActionResult FinDeSemana() 
+    {
+        ViewBag.EsFinDeSemana = _simpleService.EsFinDeSemana();
+        return View();
+    }
+
+    [HttpGet]
+    public IActionResult Edad() 
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult CalcularEdad(DateTime anioNacimiento) 
+    {
+        ViewBag.Edad = _simpleService.CalcularEdad(anioNacimiento);
+        return View("Edad");
+    }
 
     public IActionResult Index()
     {
